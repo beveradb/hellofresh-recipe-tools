@@ -28,6 +28,13 @@ curl "https://gw.hellofresh.com/api/recipes/search?offset=0&limit=5000&q=&locale
 --compressed \
 -o all-recipes-search.json
 
+# Pretty-print the recipe metadata JSON for easier viewing and manipulation with unix tools
+cat all-recipes-search.json | jq '.' > all-recipes-search-pretty.json
+
+# Parse recipe search JSON for API URLs to fetch proper recipe data JSON from API
+cat all-recipes-search.json | jq '.items[].link' | sed -E 's/.https:.+(recipes.+).country=gb./https:\/\/gw.hellofresh.com\/api\/\1/g' > all-recipes-api-urls.txt
+
+
 exit
 
 # Parse this recipe search JSON for websiteUrl fields and output this into a separate list of URLs to fetch, in case there is data we can only scrape from the HTML
