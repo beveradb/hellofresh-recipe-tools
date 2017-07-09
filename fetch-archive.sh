@@ -81,9 +81,9 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 	# If we don't already have this recipe webpage cached, download it
 	if [ ! -f webpages/$recipeID.html ]; then
 	        echo -e "Downloading recipe HTML webpage from HelloFresh website for new recipe with ID: $recipeID \n"
-		recipeWebpageURL=`cat ../recipes/$recipeID | jq '.websiteUrl' | sed 's/"//'`
+		recipeWebpageURL=`cat recipes/$recipeID | jq '.websiteUrl' | sed 's/"//'`
 		
-		if ! [ $recipeWebpageURL == "null" ]; then
+		if ! [ "$recipeWebpageURL" == "null" ]; then
 			echo "Fetching webpage URL with cURL: $recipeWebpageURL"
 			curl -o webpages/$recipeID.html $recipeWebpageURL
 		else
@@ -97,9 +97,9 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 	# If we don't already have the recipe card PDF cached, download it
         if [ ! -f cards/$recipeID.pdf ]; then
                 echo -e "Downloading recipe card PDF from cloudfront CDN cardLink for new recipe with ID: $recipeID \n"
-                recipeCardURL=`cat ../recipes/$recipeID | jq '.cardLink' | sed 's/"//'`
+                recipeCardURL=`cat recipes/$recipeID | jq '.cardLink' | sed 's/"//'`
 
-                if ! [ $recipeCardURL == "null" ]; then
+                if ! [ "$recipeCardURL" == "null" ]; then
                         echo "Fetching card PDF URL with cURL: $recipeCardURL"
                         curl -o cards/$recipeID.pdf $recipeCardURL
                 else
