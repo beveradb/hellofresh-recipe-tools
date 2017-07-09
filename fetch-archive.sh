@@ -86,8 +86,13 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 		if ! [ "$recipeWebpageURL" == "null" ]; then
 			echo "Fetching webpage URL with cURL: $recipeWebpageURL"
 			curl -o webpages/$recipeID.html $recipeWebpageURL
+			
+			if [ $(stat -c%s webpages/$recipeID.html) -lt 10000 ]; then
+				echo -e "Webpage fetched, but file webpages/$recipeID.html has size less than 10Kb; an error probably occurred, exiting \n"
+				exit
+			fi
 		else
-			echo "Found null webpageUrl for recipe with ID: $recipeID, skipping"
+			echo "Found null webpageUrl for recipe with ID: $recipeID, exiting"
 			exit
 		fi
         else
@@ -102,6 +107,11 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
                 if ! [ "$recipeCardURL" == "null" ]; then
                         echo "Fetching card PDF URL with cURL: $recipeCardURL"
                         curl -o cards/$recipeID.pdf $recipeCardURL
+
+                        if [ $(stat -c%s cards/$recipeID.pdf) -lt 10000 ]; then
+                                echo -e "Card PDF fetched, but file cards/$recipeID.pdf size less than 10Kb; an error probably occurred, exiting \n"
+                                exit
+                        fi
                 else
                         echo "Found null cardLink for recipe with ID: $recipeID, skipping"
                 fi
