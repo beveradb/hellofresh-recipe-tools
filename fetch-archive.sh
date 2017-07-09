@@ -12,11 +12,6 @@ if ! { [ "$TERM" = "screen" ] && [ -n "$TMUX" ]; } then
   exit
 fi
 
-if ! [ `basename "$PWD"` = "hellofresh-recipe-tools" ]; then
-  echo "Please run from within hellofresh-recipe-tools directory"
-  exit
-fi
-
 if ! hash jq 2>/dev/null; then
   echo "Please install jq to use this tool"
   exit
@@ -131,13 +126,24 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 
 	echo "Processing recipe data JSON with jq to produce flat object version for use with refine"
 	cat recipes/$recipeID | jq '
-		.calories = .nutrition[1].amount | 
-		.combinedingredients = ( [.ingredients[].name] | join(", ") ) | 
-		.combinedutensils = ( [.utensils[].name] | join(", ") ) | 
-		.combinedtags = ( [.tags[].name] | join(", ") ) | 
-		.combinedcuisines = ( [.cuisines[].name] | join(", ") ) | 
-		.totalsteps = (.steps | length) |
-		del(.["nutrition","ingredients","allergens","utensils","tags","cuisines","yields","steps"])' > recipesflat/$recipeID
+		."Full Name" = .name + " " + .headline |
+		."Calories" = .nutrition[1].amount |
+		."Total Ingredients" = ( [.ingredients[].name] | length ) |
+		."Ingredients" = ( [.ingredients[].name] | join(", ") ) |
+		."Utensils" = ( [.utensils[].name] | join(", ") ) |
+		."Tags" = ( [.tags[].name] | join(", ") ) |
+		."Cuisines" = ( [.cuisines[].name] | join(", ") ) |
+		."Prep Time Minutes" = (.prepTime | match("PT([0-9]*)M").captures[0].string) |
+		."Total Steps" = (.steps | length) |
+		."Description" = .description |
+		."Card PDF Link" = ("http://a.beveridge.uk/HelloFreshArchive/cards/" + .id + ".pdf") |
+		."Image URL" = .imageLink |
+		."Has Card PDF" = (.cardLink != null) |
+		."HelloFresh User Favourites" = .favoritesCount |
+		."HelloFresh ID" = .id |
+		."HelloFresh URL" = .websiteUrl |
+		del(.["country","id","name","seoName","slug","headline","description","seoDescription","comment","difficulty","totalTime","prepTime","servingSize","createdAt","updatedAt","link","imageLink","cardLink","videoLink","wines","marketplaceItems","presets","author","yieldType","averageRating","ratingsCount","favoritesCount","userFavorite","userRating","weeks","productFamilies","active","highlighted","isComplete","validationErrors","isPremium","websiteUrl","nutrition","ingredients","allergens","utensils","tags","cuisines","yields","steps"])
+		' > recipesflat/$recipeID
 
   else
 	echo "Recipe data JSON file did not exist after second check, an error likely occurred when attempting to fetch ID: $recipeID"
