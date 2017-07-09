@@ -83,23 +83,12 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 	# If we don't already have this recipe webpage cached, download it
 	if [ ! -f webpages/$recipeID.html ]; then
 	        echo -e "Downloading recipe HTML webpage from HelloFresh website for new recipe with ID: $recipeID \n"
-		recipeWebpageURL=`cat recipes/$recipeID | jq '.websiteUrl' | sed 's/"//' `
+		recipeWebpageURL=`cat recipes/$recipeID | jq '.websiteUrl' | sed 's/"//g'`
 		
 		if ! [ "$recipeWebpageURL" == "null" ]; then
-			echo "Fetching webpage URL with cURL: $recipeWebpageURL"
+			echo "Fetching webpage URL with wget: $recipeWebpageURL"
 
-			curl "$recipeWebpageURL" \
-			-H "Connection:keep-alive" \
-			-H "Pragma:no-cache" \
-			-H "Cache-Control:no-cache" \
-			-H "Upgrade-Insecure-Requests:1" \
-			-H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" \
-			-H "Accept-Encoding:gzip, deflate" \
-			-H "Accept-Language:en-GB,en;q=0.8,ca;q=0.6" \
-			-H "Referer:$RefererHeader" \
-			-H "User-Agent:$UserAgentHeader" \
-			--compressed \
-			-o webpages/$recipeID.html
+			wget -O webpages/$recipeID.html $recipeWebpageURL
 			
 			if [ $(stat -c%s webpages/$recipeID.html) -lt 10000 ]; then
 				echo -e "Webpage fetched, but file webpages/$recipeID.html has size less than 10Kb; an error probably occurred, exiting \n"
@@ -116,23 +105,12 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 	# If we don't already have the recipe card PDF cached, download it
         if [ ! -f cards/$recipeID.pdf ]; then
                 echo -e "Downloading recipe card PDF from cloudfront CDN cardLink for new recipe with ID: $recipeID \n"
-                recipeCardURL=`cat recipes/$recipeID | jq '.cardLink' | sed 's/"//' `
+                recipeCardURL=`cat recipes/$recipeID | jq '.cardLink' | sed 's/"//g'`
 
                 if ! [ "$recipeCardURL" == "null" ]; then
-                        echo "Fetching card PDF URL with cURL: $recipeCardURL"
+                        echo "Fetching card PDF URL with wget: $recipeCardURL"
 
-			curl "$recipeCardURL" \
-			-H "Connection:keep-alive" \
-			-H "Pragma:no-cache" \
-			-H "Cache-Control:no-cache" \
-			-H "Upgrade-Insecure-Requests:1" \
-			-H "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8" \
-			-H "Accept-Encoding:gzip, deflate" \
-			-H "Accept-Language:en-GB,en;q=0.8,ca;q=0.6" \
-			-H "Referer:$RefererHeader" \
-			-H "User-Agent:$UserAgentHeader" \
-			--compressed \
-			-o cards/$recipeID.pdf
+			wget -O cards/$recipeID.pdf $recipeCardURL
 
                         if [ $(stat -c%s cards/$recipeID.pdf) -lt 10000 ]; then
                                 echo -e "Card PDF fetched, but file cards/$recipeID.pdf size less than 10Kb; an error probably occurred, exiting \n"
