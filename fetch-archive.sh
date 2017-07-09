@@ -15,6 +15,14 @@ if ! [ `basename "$PWD"` = "hellofresh-recipe-tools" ]; then
   exit
 fi
 
+if ! hash jq 2>/dev/null; then
+  echo "Please install jq to use this tool"
+  exit
+fi
+
+# Ensure output directories exist
+mkdir -p cards recipes webpages
+
 # If we don't already have the recipe card PDF cached, download it
 if [ ! -f all-recipes-search.json ]; then
 	# Fetch data about what recipes actually exist (currently 1429 total) by slightly abusing the HelloFresh recipe search API
@@ -47,7 +55,7 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
   echo -e "\nProcessing recipe with ID: $recipeID"
   
   # Fetch recipe data JSON from API, only if we don't already have it
-  if [ ! -f ../recipes/$recipeID ]; then
+  if [ ! -f recipes/$recipeID ]; then
 	echo -e "Fetching recipe data from HelloFresh API for new recipe with ID: $recipeID \n"
 
 	curl "https://gw.hellofresh.com/api/recipes/$recipeID" \
@@ -62,22 +70,22 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 	-H "referer: https://www.hellofresh.co.uk/recipe-archive/search/?q=andrew" \
 	-H "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36" \
 	--compressed \
-	-o ../recipes/$recipeID
+	-o recipes/$recipeID
   else
 	echo "Recipe data JSON cached, no need to re-fetch for ID: $recipeID"
   fi
 
   # Perform double check for recipe JSON before proceeding on to more tasks with data from that file
-  if [ -f ../recipes/$recipeID ]; then
+  if [ -f recipes/$recipeID ]; then
 
 	# If we don't already have this recipe webpage cached, download it
-	if [ ! -f ../webpages/$recipeID.html ]; then
+	if [ ! -f webpages/$recipeID.html ]; then
 	        echo -e "Downloading recipe HTML webpage from HelloFresh website for new recipe with ID: $recipeID \n"
 		recipeWebpageURL=`cat ../recipes/$recipeID | jq '.websiteUrl' | sed 's/"//'`
 		
 		if ! [ $recipeWebpageURL == "null" ]; then
 			echo "Fetching webpage URL with cURL: $recipeWebpageURL"
-			curl -o ../webpages/$recipeID.html $recipeWebpageURL
+			curl -o webpages/$recipeID.html $recipeWebpageURL
 		else
 			echo "Found null webpageUrl for recipe with ID: $recipeID, skipping"
 			exit
@@ -87,13 +95,13 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 	fi
 	
 	# If we don't already have the recipe card PDF cached, download it
-        if [ ! -f ../cards/$recipeID.pdf ]; then
+        if [ ! -f cards/$recipeID.pdf ]; then
                 echo -e "Downloading recipe card PDF from cloudfront CDN cardLink for new recipe with ID: $recipeID \n"
                 recipeCardURL=`cat ../recipes/$recipeID | jq '.cardLink' | sed 's/"//'`
 
                 if ! [ $recipeCardURL == "null" ]; then
                         echo "Fetching card PDF URL with cURL: $recipeCardURL"
-                        curl -o ../cards/$recipeID.pdf $recipeCardURL
+                        curl -o cards/$recipeID.pdf $recipeCardURL
                 else
                         echo "Found null cardLink for recipe with ID: $recipeID, skipping"
                 fi
@@ -102,7 +110,7 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 	fi
 
 	# Check if both webpage and PDF exist - if not, exit with error so we can investigate
-	if [ -f ../webpages/$recipeID.html -o -f ../cards/$recipeID.pdf ]; then
+	if [ -f webpages/$recipeID.html -o -f cards/$recipeID.pdf ]; then
                 echo -e "Metadata JSON, plus card PDF OR webpage HTML cached successfully for recipe ID: $recipeID, moving on. \n"
         else
                 echo "Both card and webpage download failed, exiting for investigation"
