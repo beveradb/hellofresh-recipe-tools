@@ -91,8 +91,7 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 			wget -O webpages/$recipeID.html $recipeWebpageURL
 			
 			if [ $(stat -c%s webpages/$recipeID.html) -lt 10000 ]; then
-				echo -e "Webpage fetched, but file webpages/$recipeID.html has size less than 10Kb; an error probably occurred, exiting \n"
-				exit
+				echo -e "Webpage fetched, but file webpages/$recipeID.html has size less than 10Kb; an error probably occurred \n"
 			fi
 		else
 			echo "Found null webpageUrl for recipe with ID: $recipeID, exiting"
@@ -113,8 +112,7 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 			wget -O cards/$recipeID.pdf $recipeCardURL
 
                         if [ $(stat -c%s cards/$recipeID.pdf) -lt 10000 ]; then
-                                echo -e "Card PDF fetched, but file cards/$recipeID.pdf size less than 10Kb; an error probably occurred, exiting \n"
-                                exit
+                                echo -e "Card PDF fetched, but file cards/$recipeID.pdf size less than 10Kb; an error probably occurred \n"
                         fi
                 else
                         echo "Found null cardLink for recipe with ID: $recipeID, skipping"
@@ -131,11 +129,24 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 		exit
         fi
 
+	echo "Processing recipe data JSON with jq to produce flat object version for use with refine"
+	cat recipes/$recipeID | jq '
+		.calories = .nutrition[1].amount | 
+		.combinedingredients = ( [.ingredients[].name] | join(", ") ) | 
+		.combinedutensils = ( [.utensils[].name] | join(", ") ) | 
+		.combinedtags = ( [.tags[].name] | join(", ") ) | 
+		.combinedcuisines = ( [.cuisines[].name] | join(", ") ) | 
+		.totalsteps = (.steps | length) |
+		del(.["nutrition","ingredients","allergens","utensils","tags","cuisines","yields","steps"])' > recipesflat/$recipeID
+
   else
 	echo "Recipe data JSON file did not exist after second check, an error likely occurred when attempting to fetch ID: $recipeID"
 	exit
   fi
 done
+
+echo "Combining flat recipes into single JSON array output file"
+cat recipesflat/* | sed 's/^}/},/g' | sed '1s/^/[\n/' | sed '$s/,/\n]/' > recipes-flat-combined.json
 
 exit
 
