@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="520a469f-3b2d-45ed-a9c6-c775d37295cb" name="a.beveridge.uk HelloFreshArchive" url="http://a.beveridge.uk">
+        <fileTransfer host="a.beveridge.uk" port="22" privateKey="C:\Users\Home\AndrewThinkPad2017.ppk" rootFolder="/home/andrew/HelloFreshBrowser" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
