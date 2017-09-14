@@ -133,7 +133,7 @@ cat all-recipes-search.json | jq '.items[].id' | sed 's/"//g' | while read recip
 		."Utensils" = ( [.utensils[].name] | join(", ") ) |
 		."Tags" = ( [.tags[].name] | join(", ") ) |
 		."Cuisines" = ( [.cuisines[].name] | join(", ") ) |
-		."Prep Time Minutes" = (.prepTime | match("PT([0-9]*)M").captures[0].string) |
+		."Prep Time Minutes" = if(.prepTime != null) then (.prepTime | match("PT([0-9]*)M").captures[0].string) else "" end |
 		."Total Steps" = (.steps | length) |
 		."Description" = .description |
 		."Card PDF Link" = ("http://a.beveridge.uk/HelloFreshArchive/cards/" + .id + ".pdf") |
