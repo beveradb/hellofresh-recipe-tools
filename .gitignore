@@ -1,2 +1,5 @@
-data*
 *.log
+recipe-server-backend/recipes/
+recipe-server-backend/cards/
+recipe-server-backend/images-small/
+recipe-server-backend/images-large/

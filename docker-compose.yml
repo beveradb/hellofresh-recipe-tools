@@ -1,0 +1,23 @@
+version: '3'
+services:
+  recipes-frontend:
+    container_name: recipes-frontend
+    build:
+      context: .
+      dockerfile: recipe-browser-web/Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - recipes-backend
+
+  recipes-backend:
+    container_name: recipes-backend
+    build:
+      context: .
+      dockerfile: recipe-server-backend/Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./recipe-server-backend/cards:/usr/share/nginx/html/cards
+      - ./recipe-server-backend/images-small:/usr/share/nginx/html/images/small
+      - ./recipe-server-backend/images-large:/usr/share/nginx/html/images/large
