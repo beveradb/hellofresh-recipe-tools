@@ -1,5 +1,6 @@
 *.log
 recipe-server-backend/recipes/
-recipe-server-backend/cards/
-recipe-server-backend/images-small/
-recipe-server-backend/images-large/
+recipe-server-backend/webpages/*.html
+recipe-server-backend/cards/*.pdf
+recipe-server-backend/images-small/*.jpg
+recipe-server-backend/images-large/*.jpg
