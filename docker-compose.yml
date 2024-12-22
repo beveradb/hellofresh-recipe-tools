@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: recipe-browser-web/Dockerfile
     ports:
-      - "80:80"
+      - "37920:80"
     depends_on:
       - recipes-backend
 
@@ -15,8 +15,6 @@ services:
     build:
       context: .
       dockerfile: recipe-server-backend/Dockerfile
-    ports:
-      - "3000:3000"
     volumes:
       - ./recipe-server-backend/cards:/usr/share/nginx/html/cards
       - ./recipe-server-backend/images-small:/usr/share/nginx/html/images/small
